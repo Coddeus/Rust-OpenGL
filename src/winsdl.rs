@@ -18,7 +18,8 @@ impl Winsdl {
         gl_attr.set_context_version(3, 3);
 
         let window = video_subsystem
-            .window("My window", width as u32, height as u32)
+            .window("Rust OpenGL - 2", width as u32, height as u32)
+            .resizable()
             .opengl()
             .build()
             .unwrap();
