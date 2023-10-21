@@ -5,7 +5,7 @@ use objects::*;
 
 use std::{time::Instant, f32::consts::PI};
 
-use sdl2::event::{Event, WindowEvent};
+use sdl2::event::Event;
 
 fn main() {
     let mut winsdl: Winsdl = Winsdl::new(1000, 1000).unwrap();
@@ -26,17 +26,10 @@ fn main() {
     let ibo = Ibo::gen();
     ibo.set(&indices);
 
-
-    let start = Instant::now();
     'running: loop {
         for event in winsdl.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
-                Event::Window { win_event, .. } => {
-                    if let WindowEvent::Resized(width, height) = win_event {
-                        unsafe {gl::Viewport(0, 0, width, height);}
-                    }
-                }
                 _ => {  }
             }
         }
