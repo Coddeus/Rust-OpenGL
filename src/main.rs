@@ -3,7 +3,7 @@ use winsdl::Winsdl;
 mod objects;
 use objects::*;
 
-use std::{time::Instant, f32::consts::PI};
+use std::f32::consts::PI;
 
 use sdl2::event::Event;
 
