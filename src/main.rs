@@ -1,22 +1,23 @@
 mod winsdl;
+use std::{f32::consts::PI, time::Instant};
+
 use winsdl::Winsdl;
 mod objects;
 use objects::*;
-
-use std::f32::consts::PI;
 
 use sdl2::event::Event;
 
 fn main() {
     let mut winsdl: Winsdl = Winsdl::new(1000, 1000).unwrap();
-    unsafe { gl::Viewport(0, 0, 1000, 1000); }
+    unsafe {
+        gl::Viewport(0, 0, 1000, 1000);
+    }
 
-    
     let program = create_program().unwrap();
     program.set();
 
-    let (vertices, indices) = triangle_fan(100);
-    println!("{:?}\n{:?}", vertices, indices);
+    let (mut vertices, mut indices) = triangle_fan(3);
+
     let vbo = Vbo::gen();
     vbo.set(&vertices);
 
@@ -26,34 +27,42 @@ fn main() {
     let ibo = Ibo::gen();
     ibo.set(&indices);
 
+    let start: Instant = Instant::now();
+    let mut seconds_elapsed: u32 = 0;
+
     'running: loop {
         for event in winsdl.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
-                _ => {  }
+                _ => {}
             }
         }
         unsafe {
-            gl::ClearColor(54./255., 159./255., 219./255., 1.0);
+            gl::ClearColor(54. / 255., 159. / 255., 219. / 255., 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
+            if start.elapsed().as_secs_f32().floor() as u32 > seconds_elapsed {
+                seconds_elapsed += 1;
+
+                (vertices, indices) = triangle_fan(seconds_elapsed + 3);
+                vbo.set(&vertices);
+                ibo.set(&indices);
+            }
+
             gl::DrawElements(
-                gl::TRIANGLES, 
-                indices.len() as i32, 
-                gl::UNSIGNED_INT, 
-                0 as *const _
-            )
+                gl::TRIANGLES,
+                indices.len() as i32,
+                gl::UNSIGNED_INT,
+                0 as *const _,
+            );
         }
         winsdl.window.gl_swap_window();
     }
 }
 
 fn triangle_fan(n: u32) -> (Vec<f32>, Vec<u32>) {
-    let mut vertices = vec![
-        0.0, 0.0,
-        0.5, 0.0,
-    ];
-    let mut indices = vec![];
+    let mut vertices: Vec<f32> = vec![0.0, 0.0, 0.5, 0.0];
+    let mut indices: Vec<u32> = vec![];
 
     let mut angle: f32;
     for m in 1..n {
@@ -64,7 +73,7 @@ fn triangle_fan(n: u32) -> (Vec<f32>, Vec<u32>) {
 
         indices.push(0);
         indices.push(m);
-        indices.push(m+1);
+        indices.push(m + 1);
     }
 
     indices.push(0);

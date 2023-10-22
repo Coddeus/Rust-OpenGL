@@ -1,41 +1,47 @@
-use std::{ffi::{CStr, CString}, ptr::null};
+use std::{
+    ffi::{CStr, CString},
+    ptr::{null, null_mut},
+};
 
-use gl::types::{GLuint, GLint, GLchar, GLenum};
+use gl::{
+    types::{GLchar, GLenum, GLint, GLuint},
+    UseProgram,
+};
 
-/// An OpenGL Shader of the Graphics pipeline
+/// An OpenGL Shader (of the graphics pipeline)
 pub struct Shader {
     id: GLuint,
 }
 
 impl Shader {
-    /// Creates a shader out of a file path and a type
     pub fn from_source(source: &CStr, kind: GLenum) -> Result<Self, String> {
         let id = unsafe { gl::CreateShader(kind) };
         unsafe {
             gl::ShaderSource(id, 1, &source.as_ptr(), null());
             gl::CompileShader(id);
         }
-    
+
         let mut success: GLint = 1;
         unsafe {
             gl::GetShaderiv(id, gl::COMPILE_STATUS, &mut success);
         }
-    
+
         if success == 0 {
+            // An error occured
             let mut len: GLint = 0;
             unsafe {
                 gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);
             }
-    
+
             let error = create_whitespace_cstring_with_len(len as usize);
-    
+
             unsafe {
-                gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr() as *mut GLchar);
+                gl::GetShaderInfoLog(id, len, null_mut(), error.as_ptr() as *mut GLchar);
             }
-            
+
             return Err(error.to_string_lossy().into_owned());
         }
-    
+
         Ok(Shader { id })
     }
 
@@ -52,62 +58,52 @@ impl Drop for Shader {
     }
 }
 
-/// An OpenGL program, to which shaders are attached
+/// An OpenGL Program, a sequence of shaders calls.
 pub struct Program {
-    pub id: GLuint,
+    id: GLuint,
 }
 
 impl Program {
-    pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
-        let program_id = unsafe { gl::CreateProgram() };
+    fn from_shaders(shaders: &[Shader]) -> Result<Self, String> {
+        let id = unsafe { gl::CreateProgram() };
 
         for shader in shaders {
             unsafe {
-                gl::AttachShader(program_id, shader.id());
+                gl::AttachShader(id, shader.id());
             }
         }
 
         unsafe {
-            gl::LinkProgram(program_id);
+            gl::LinkProgram(id);
         }
 
         let mut success: GLint = 1;
         unsafe {
-            gl::GetProgramiv(program_id, gl::LINK_STATUS, &mut success);
+            gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
         }
 
         if success == 0 {
+            // An error occured
             let mut len: GLint = 0;
             unsafe {
-                gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut len);
+                gl::GetProgramiv(id, gl::INFO_LOG_LENGTH, &mut len);
             }
 
             let error = create_whitespace_cstring_with_len(len as usize);
 
             unsafe {
-                gl::GetProgramInfoLog(
-                    program_id,
-                    len,
-                    std::ptr::null_mut(),
-                    error.as_ptr() as *mut GLchar,
-                );
+                gl::GetProgramInfoLog(id, len, null_mut(), error.as_ptr() as *mut GLchar);
             }
 
             return Err(error.to_string_lossy().into_owned());
         }
 
-        for shader in shaders {
-            unsafe {
-                gl::DetachShader(program_id, shader.id());
-            }
-        }
-
-        Ok(Program { id: program_id })
+        Ok(Program { id })
     }
 
     pub fn set(&self) {
         unsafe {
-            gl::UseProgram(self.id);
+            UseProgram(self.id);
         }
     }
 }
@@ -120,27 +116,30 @@ impl Drop for Program {
     }
 }
 
-
 fn create_whitespace_cstring_with_len(len: usize) -> CString {
     let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
     buffer.extend([b' '].iter().cycle().take(len));
     unsafe { CString::from_vec_unchecked(buffer) }
 }
 
-/// Creates the OpenGL shader program.
 pub fn create_program() -> Result<Program, &'static str> {
-    let vert_shader =
-        Shader::from_source(&CString::new(include_str!(".vert")).unwrap(), gl::VERTEX_SHADER).unwrap();
-
-    let frag_shader =
-        Shader::from_source(&CString::new(include_str!(".frag")).unwrap(), gl::FRAGMENT_SHADER).unwrap();
+    let vert_shader = Shader::from_source(
+        &CString::new(include_str!(".vert")).unwrap(),
+        gl::VERTEX_SHADER,
+    )
+    .unwrap();
+    let frag_shader = Shader::from_source(
+        &CString::new(include_str!(".frag")).unwrap(),
+        gl::FRAGMENT_SHADER,
+    )
+    .unwrap();
 
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
 
     Ok(shader_program)
 }
 
-/// OpenGL Vertex Buffer Object.
+/// OpenGL Vertex Buffer Object
 pub struct Vbo {
     pub id: GLuint,
 }
@@ -166,20 +165,20 @@ impl Vbo {
         self.data(data);
     }
 
-    pub fn bind(&self) {
-        unsafe {
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.id);
-        }
-    }
-
     fn data(&self, vertices: &Vec<f32>) {
         unsafe {
             gl::BufferData(
                 gl::ARRAY_BUFFER,
                 (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr,
                 vertices.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW,
+                gl::DYNAMIC_DRAW,
             );
+        }
+    }
+
+    fn bind(&self) {
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.id);
         }
     }
 
@@ -196,7 +195,7 @@ impl Vbo {
     }
 }
 
-/// OpenGL Index Buffer Object.
+/// OpenGL Index Buffer Object
 pub struct Ibo {
     pub id: GLuint,
 }
@@ -222,20 +221,20 @@ impl Ibo {
         self.data(data);
     }
 
-    fn bind(&self) {
-        unsafe {
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id);
-        }
-    }
-
     fn data(&self, indices: &Vec<u32>) {
         unsafe {
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
                 (indices.len() * std::mem::size_of::<u32>()) as gl::types::GLsizeiptr,
                 indices.as_ptr() as *const gl::types::GLvoid,
-                gl::STATIC_DRAW,
+                gl::DYNAMIC_DRAW,
             );
+        }
+    }
+
+    fn bind(&self) {
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id);
         }
     }
 
@@ -252,7 +251,7 @@ impl Ibo {
     }
 }
 
-/// OpenGL Vertex Array Object.
+/// OpenGL Vertex Array Object
 pub struct Vao {
     pub id: GLuint,
 }
@@ -278,12 +277,6 @@ impl Vao {
         self.setup();
     }
 
-    fn bind(&self) {
-        unsafe {
-            gl::BindVertexArray(self.id);
-        }
-    }
-
     fn setup(&self) {
         unsafe {
             gl::EnableVertexAttribArray(0);
@@ -292,9 +285,15 @@ impl Vao {
                 2,
                 gl::FLOAT,
                 gl::FALSE,
-                (2 * std::mem::size_of::<f32>()) as gl::types::GLint,
-                std::ptr::null(),
+                (2 * std::mem::size_of::<f32>()) as GLint,
+                null(),
             );
+        }
+    }
+
+    fn bind(&self) {
+        unsafe {
+            gl::BindVertexArray(self.id);
         }
     }
 
