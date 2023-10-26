@@ -98,6 +98,12 @@ impl Program {
             return Err(error.to_string_lossy().into_owned());
         }
 
+        for shader in shaders {
+            unsafe {
+                gl::DetachShader(id, shader.id());
+            }
+        }
+
         Ok(Program { id })
     }
 
