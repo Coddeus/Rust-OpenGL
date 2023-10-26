@@ -5,16 +5,16 @@ use winsdl::Winsdl;
 mod objects;
 use objects::*;
 
-use sdl2::event::Event;
+use sdl2::event::{Event, WindowEvent};
 
 fn main() {
-    let mut winsdl: Winsdl = Winsdl::new(1000, 1000).unwrap();
-    unsafe { gl::Viewport(0, 0, 1000, 1000); }
+    let mut winsdl: Winsdl = Winsdl::new(800, 600).unwrap();
+    unsafe { gl::Viewport(0, 0, 800, 600); }
 
     let program = create_program().unwrap();
     program.set();
 
-    let (mut vertices, mut indices) = triangle_fan(5);
+    let (mut vertices, mut indices) = triangle_fan(3);
 
     let vbo = Vbo::gen();
     vbo.set(&vertices);
@@ -24,6 +24,14 @@ fn main() {
 
     let ibo = Ibo::gen();
     ibo.set(&indices);
+    
+
+    let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
+    let u_resolution = Uniform::new(program.id(), "u_resolution").expect("u_resolution Uniform");
+    unsafe {
+        gl::Uniform1f(u_time.id, 0.0);
+        gl::Uniform2f(u_resolution.id, 800 as f32, 600 as f32);
+    }
 
     let start: Instant = Instant::now();
     let mut seconds_elapsed: u32 = 0;
@@ -32,21 +40,30 @@ fn main() {
         for event in winsdl.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
+                Event::Window { win_event, .. } => {
+                    if let WindowEvent::Resized(width, height) = win_event {
+                        unsafe {
+                            gl::Viewport(0, 0, width, height);
+                            gl::Uniform2f(u_resolution.id, width as f32, height as f32);
+                        }
+                    }
+                },
                 _ => {  }
             }
         }
         unsafe {
-            gl::ClearColor(54./255., 159./255., 219./255., 1.0);
+            gl::ClearColor(20./255., 20./255., 20./255., 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
             if start.elapsed().as_secs_f32().floor() as u32 > seconds_elapsed {
                 seconds_elapsed += 1;
                 
-                (vertices, indices) = triangle_fan(seconds_elapsed + 3);
+                (vertices, indices) = triangle_fan(seconds_elapsed % 6 + 3);
                 vbo.set(&vertices);
                 ibo.set(&indices);
             }
 
+            gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
             gl::DrawElements(
                 gl::TRIANGLES, 
                 indices.len() as i32, 

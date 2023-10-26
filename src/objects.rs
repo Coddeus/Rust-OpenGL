@@ -112,6 +112,10 @@ impl Program {
             UseProgram(self.id);
         }
     }
+
+    pub fn id(&self) -> GLuint {
+        self.id
+    }
 }
 
 impl Drop for Program {
@@ -313,5 +317,21 @@ impl Vao {
         unsafe {
             gl::DeleteVertexArrays(1, &self.id);
         }
+    }
+}
+
+/// An OpenGL uniform, data readable from the shaders
+pub struct Uniform {
+    pub id: GLint,
+}
+
+impl Uniform {
+    pub fn new(program: u32, name: &str) -> Result<Self, &'static str> {
+        let cname: CString = CString::new(name).expect("CString::new failed");
+        let location: GLint = unsafe { gl::GetUniformLocation(program, cname.as_ptr()) };
+        if location == -1 {
+            return Err("Couldn't get a uniform location");
+        }
+        Ok(Uniform { id: location })
     }
 }

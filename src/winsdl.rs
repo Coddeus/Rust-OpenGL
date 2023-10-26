@@ -19,6 +19,7 @@ impl Winsdl {
 
         let window = video_subsystem
             .window("My window", width as u32, height as u32)
+            .resizable()
             .opengl()
             .build()
             .unwrap();
