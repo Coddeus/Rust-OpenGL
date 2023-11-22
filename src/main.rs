@@ -4,12 +4,14 @@ use std::{f32::consts::PI, time::Instant};
 use winsdl::Winsdl;
 mod objects;
 use objects::*;
+mod transform;
+use transform::*;
 
 use sdl2::event::{Event, WindowEvent};
 
 fn main() {
-    let mut winsdl: Winsdl = Winsdl::new(800, 600).unwrap();
-    unsafe { gl::Viewport(0, 0, 800, 600); }
+    let mut winsdl: Winsdl = Winsdl::new(600, 600).unwrap();
+    unsafe { gl::Viewport(0, 0, 600, 600); }
 
     let program = create_program().unwrap();
     program.set();
@@ -24,13 +26,25 @@ fn main() {
 
     let ibo = Ibo::gen();
     ibo.set(&indices);
+
+    let mut model_matrix = Matrix::new();
+    let mut view_matrix = Matrix::new();
+    model_matrix.scale(0.5, 0.5);
+    model_matrix.translate(0.5, 0.5);
+    model_matrix.rotate(-PI/2.);
+    view_matrix.translate(0.0, -1.0);
+    view_matrix.rotate(PI);
     
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
     let u_resolution = Uniform::new(program.id(), "u_resolution").expect("u_resolution Uniform");
+    let u_model_matrix = Uniform::new(program.id(), "u_model_matrix").expect("u_model_matrix Uniform");
+    let u_view_matrix = Uniform::new(program.id(), "u_view_matrix").expect("u_view_matrix Uniform");
     unsafe {
         gl::Uniform1f(u_time.id, 0.0);
-        gl::Uniform2f(u_resolution.id, 800 as f32, 600 as f32);
+        gl::Uniform2f(u_resolution.id, 600 as f32, 600 as f32);
+        gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
+        gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
     }
 
     let start: Instant = Instant::now();
