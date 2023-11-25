@@ -27,13 +27,20 @@ fn main() {
     let ibo = Ibo::gen();
     ibo.set(&indices);
 
-    let mut model_matrix = Matrix::new();
-    let mut view_matrix = Matrix::new();
-    model_matrix.scale(0.5, 0.5);
-    model_matrix.translate(0.5, 0.5);
-    model_matrix.rotate(-PI/2.);
-    view_matrix.translate(0.0, -1.0);
-    view_matrix.rotate(PI);
+    //  let mut model_matrix = Mat3::new();
+    //  let mut view_matrix = Mat3::new();
+    //  model_matrix.scale(0.5, 0.5);
+    //  model_matrix.translate(0.5, 0.5);
+    //  model_matrix.rotate(-PI/2.);
+    //  view_matrix.translate(0.0, -1.0);
+    //  view_matrix.rotate(PI);
+    let mut model_matrix = Mat4::new();
+    let mut view_matrix = Mat4::new();
+    model_matrix.scale(0.5, 0.5, 1.0);
+    model_matrix.translate(0.5, 0.5, 0.0);
+    model_matrix.rotate_z(-PI/2.);
+    view_matrix.translate(0.0, -1.0, 0.0);
+    view_matrix.rotate_z(PI);
     
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
@@ -43,8 +50,8 @@ fn main() {
     unsafe {
         gl::Uniform1f(u_time.id, 0.0);
         gl::Uniform2f(u_resolution.id, 600 as f32, 600 as f32);
-        gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
-        gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
+        gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
+        gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
     }
 
     let start: Instant = Instant::now();
