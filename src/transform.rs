@@ -35,7 +35,7 @@ impl Mat3 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat3, around (0.0, 0.0).
+    /// Add a rotation transformation to the Mat3, clockiwse, around (0.0, 0.0).
     pub fn rotate(&mut self, angle: f32) {
         self.mult(Mat3([
             angle.cos() ,   angle.sin() ,   0.0 , 
@@ -103,7 +103,7 @@ impl Mat4 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat4 around the X axis.
+    /// Add a rotation transformation to the Mat4 around the X axis, clockiwse.
     /// The rotation center is (0.0, 0.0, 0.0).
     pub fn rotate_x(&mut self, angle: f32) {
         self.mult(Mat4([
@@ -114,7 +114,7 @@ impl Mat4 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat4 around the Y axis.
+    /// Add a rotation transformation to the Mat4 around the Y axis, clockiwse.
     /// The rotation center is (0.0, 0.0, 0.0).
     pub fn rotate_y(&mut self, angle: f32) {
         self.mult(Mat4([
@@ -125,7 +125,7 @@ impl Mat4 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat4 around the Z axis.
+    /// Add a rotation transformation to the Mat4 around the Z axis, clockiwse.
     /// The rotation center is (0.0, 0.0, 0.0).
     pub fn rotate_z(&mut self, angle: f32) {
         self.mult(Mat4([

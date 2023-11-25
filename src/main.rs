@@ -36,11 +36,6 @@ fn main() {
     //  view_matrix.rotate(PI);
     let mut model_matrix = Mat4::new();
     let mut view_matrix = Mat4::new();
-    model_matrix.scale(0.5, 0.5, 1.0);
-    model_matrix.translate(0.5, 0.5, 0.0);
-    model_matrix.rotate_z(-PI/2.);
-    view_matrix.translate(0.0, -1.0, 0.0);
-    view_matrix.rotate_z(PI);
     
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
@@ -84,7 +79,17 @@ fn main() {
                 ibo.set(&indices);
             }
 
+            let time_mod = start.elapsed().as_secs_f32() % 6.0;
+            
+            model_matrix = Mat4::new();
+            view_matrix = Mat4::new();
+            model_matrix.scale((time_mod+1.0)/5.0, (time_mod+1.0)/5.0, 1.0);
+            model_matrix.translate(time_mod/12.0, 0.0, 0.0);
+            model_matrix.rotate_z(time_mod.powi(2) / 48.);
+
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
+            gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
+            gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
             gl::DrawElements(
                 gl::TRIANGLES, 
                 indices.len() as i32, 
