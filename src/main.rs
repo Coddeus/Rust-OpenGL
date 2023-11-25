@@ -27,13 +27,8 @@ fn main() {
     let ibo = Ibo::gen();
     ibo.set(&indices);
 
-    //  let mut model_matrix = Mat3::new();
-    //  let mut view_matrix = Mat3::new();
-    //  model_matrix.scale(0.5, 0.5);
-    //  model_matrix.translate(0.5, 0.5);
-    //  model_matrix.rotate(-PI/2.);
-    //  view_matrix.translate(0.0, -1.0);
-    //  view_matrix.rotate(PI);
+    // let mut model_matrix = Mat3::new();
+    // let mut view_matrix = Mat3::new();
     let mut model_matrix = Mat4::new();
     let mut view_matrix = Mat4::new();
     
@@ -45,8 +40,6 @@ fn main() {
     unsafe {
         gl::Uniform1f(u_time.id, 0.0);
         gl::Uniform2f(u_resolution.id, 600 as f32, 600 as f32);
-        gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
-        gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
     }
 
     let start: Instant = Instant::now();
@@ -81,13 +74,18 @@ fn main() {
 
             let time_mod = start.elapsed().as_secs_f32() % 6.0;
             
+            // model_matrix = Mat3::new();
+            // view_matrix = Mat3::new();
+            // model_matrix.rotate_around(time_mod, (time_mod-3.0)*0.5, 0.0);
             model_matrix = Mat4::new();
             view_matrix = Mat4::new();
             model_matrix.scale((time_mod+1.0)/5.0, (time_mod+1.0)/5.0, 1.0);
             model_matrix.translate(time_mod/12.0, 0.0, 0.0);
-            model_matrix.rotate_z(time_mod.powi(2) / 48.);
+            model_matrix.rotate_z(time_mod.powi(4) / 2.);
 
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
+            // gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
+            // gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
             gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
             gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
             gl::DrawElements(
