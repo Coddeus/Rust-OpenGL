@@ -35,7 +35,7 @@ impl Mat3 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat3, clockiwse, around (0.0, 0.0).
+    /// Add a rotation transformation to the Mat3, clockwise, around (0.0, 0.0).
     pub fn rotate(&mut self, angle: f32) {
         self.mult(Mat3([
             angle.cos() ,   angle.sin() ,   0.0 , 
@@ -44,7 +44,7 @@ impl Mat3 {
         ]));
     }
 
-    /// Add a rotation transformation to the Mat3, around (x, y).
+    /// Add a rotation transformation to the Mat3, clockwise, around (x, y).
     pub fn rotate_around(&mut self, angle: f32, x: f32, y: f32) {
         self.translate(-x, -y);
         self.rotate(angle);
@@ -70,6 +70,12 @@ impl Into<*const f32> for Mat3 {
 /// A 4x4 matrix
 #[repr(C)]
 pub struct Mat4([f32; 16]);
+
+impl std::fmt::Debug for Mat4 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[\n\t{}, {}, {}, {}, \n\t{}, {}, {}, {}, \n\t{}, {}, {}, {}, \n\t{}, {}, {}, {}, \n]", self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], self.0[5], self.0[6], self.0[7], self.0[8], self.0[9], self.0[10], self.0[11], self.0[12], self.0[13], self.0[14], self.0[15])
+    }
+}
 
 impl Mat4 {
     /// Build a new (identity) Mat4, which applies no transformations.
@@ -144,6 +150,39 @@ impl Mat4 {
             0.0 ,   0.0 ,   1.0 ,   z_move ,
             0.0 ,   0.0 ,   0.0 ,   1.0 ,
         ]));
+    }
+
+    /// For view matrix. Moves the "camera" to (eye_x, eye_y, eye_z), looking at (target_x, target_y, target_z), with a "roll" roll angle, in radians.
+    /// Replaces any earlier transformation
+    pub fn lookat(&mut self, eye_x: f32, eye_y: f32, eye_z: f32, target_x: f32, target_y: f32, target_z: f32, mut up_x: f32, mut up_y: f32, mut up_z: f32,) {
+        // Forward vector
+        let (mut f_x, mut f_y, mut f_z) = (eye_x-target_x, eye_y-target_y, eye_z-target_z);
+        let invlen = 1.0 / (f_x*f_x+f_y*f_y+f_z*f_z).sqrt();
+        (f_x, f_y, f_z) = (f_x*invlen, f_y*invlen, f_z*invlen);
+        
+        // Left vector
+        let (mut l_x, mut l_y, mut l_z) = (up_y*f_z - up_z*f_y, up_z*f_x - up_x*f_z, up_x*f_y - up_y*f_x);
+        let invlen = 1.0 / (l_x*l_x+l_y*l_y+l_z*l_z).sqrt();
+        (l_x, l_y, l_z) = (l_x*invlen, l_y*invlen, l_z*invlen);
+        
+        // Up vector correction
+        (up_x, up_y, up_z) = (f_y*l_z - f_z*l_y, f_z*l_x - f_x*l_z, f_x*l_y - f_y*l_x);
+        
+        *self = Self::new();
+        self.translate(-eye_x, -eye_y, -eye_z);
+        println!("{:?}", self);
+        self.mult(Mat4([
+            l_x ,   l_y ,   l_z ,   0.0 ,
+            up_x,   up_y,   up_z,   0.0 ,
+            f_x ,   f_y ,   f_z ,   0.0 ,
+            0.0 ,   0.0 ,   0.0 ,   1.0 ,
+            // Transposed from:
+            // l_x ,   up_x,   f_x ,   0.0 ,
+            // l_y ,   up_y,   f_y ,   0.0 ,
+            // l_z ,   up_z,   f_z ,   0.0 ,
+            // 0.0 ,   0.0 ,   0.0 ,   1.0 ,
+        ]));
+        println!("{:?}", self);
     }
 }
 

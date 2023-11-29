@@ -29,8 +29,8 @@ fn main() {
 
     // let mut model_matrix = Mat3::new();
     // let mut view_matrix = Mat3::new();
-    let mut model_matrix = Mat4::new();
-    let mut view_matrix = Mat4::new();
+    let mut model_matrix: Mat4;
+    let mut view_matrix: Mat4;
     
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
@@ -77,11 +77,20 @@ fn main() {
             // model_matrix = Mat3::new();
             // view_matrix = Mat3::new();
             // model_matrix.rotate_around(time_mod, (time_mod-3.0)*0.5, 0.0);
+
             model_matrix = Mat4::new();
-            view_matrix = Mat4::new();
             model_matrix.scale((time_mod+1.0)/5.0, (time_mod+1.0)/5.0, 1.0);
-            model_matrix.translate(time_mod/12.0, 0.0, 0.0);
-            model_matrix.rotate_z(time_mod.powi(4) / 2.);
+            // model_matrix.translate(time_mod/12.0, 0.0, 0.0); // for wheel visual effect
+            model_matrix.rotate_z(time_mod.powi(3) / 2.);
+
+            view_matrix = Mat4::new();
+            view_matrix.lookat((time_mod*time_mod).sin() * 0.1, 0.1, (time_mod*time_mod).cos() * 0.1, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+            // view_matrix.translate(-0.25, -0.25, -0.25);
+            // view_matrix.rotate_x(-PI/3.);
+            // view_matrix.rotate_y(-PI/3.);
+            // view_matrix.rotate_z(-PI/3.);
+            // view_matrix.rotate_y(-PI/2.);
+            // view_matrix.rotate_z(-PI/2.);
 
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
             // gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());

@@ -10,6 +10,7 @@ uniform mat4 u_view_matrix;
 
 void main()
 {
+    // for Mat3:
     // vec3 uv = u_view_matrix * u_model_matrix * vec3(Position, 1.0);
 // 
     // // Make ((-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)) a *square* always contained inside the viewport
