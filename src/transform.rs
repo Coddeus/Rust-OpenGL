@@ -153,7 +153,7 @@ impl Mat4 {
     }
 
     /// For view matrix. Moves the "camera" to (eye_x, eye_y, eye_z), looking at (target_x, target_y, target_z), with a "roll" roll angle, in radians.
-    /// Replaces any earlier transformation
+    /// Replaces any earlier transformation to this Mat4.
     pub fn lookat(&mut self, eye_x: f32, eye_y: f32, eye_z: f32, target_x: f32, target_y: f32, target_z: f32, mut up_x: f32, mut up_y: f32, mut up_z: f32,) {
         // Forward vector
         let (mut f_x, mut f_y, mut f_z) = (eye_x-target_x, eye_y-target_y, eye_z-target_z);
@@ -170,7 +170,6 @@ impl Mat4 {
         
         *self = Self::new();
         self.translate(-eye_x, -eye_y, -eye_z);
-        println!("{:?}", self);
         self.mult(Mat4([
             l_x ,   l_y ,   l_z ,   0.0 ,
             up_x,   up_y,   up_z,   0.0 ,
@@ -182,7 +181,30 @@ impl Mat4 {
             // l_z ,   up_z,   f_z ,   0.0 ,
             // 0.0 ,   0.0 ,   0.0 ,   1.0 ,
         ]));
-        println!("{:?}", self);
+    }
+
+    /// For projection matrix. Defines an orthographic projection matrix with the given [left-right] - [top-bottom] - [near-far] frustrum.
+    /// The default Frustrum is set to left-right: [-1.0, 1.0], top-bottom: [-1.0, 1.0], near-far: [-1.0, 1.0]
+    /// Replaces any earlier transformation to this Mat4.
+    pub fn project_orthographic(&mut self, l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) {        
+        *self = Mat4([
+            2.0 / (r - l)   ,   0.0                 ,   0.0                 ,   -(r + l) / (r - l)  ,
+            0.0             ,   2.0 / (t - b)       ,   0.0                 ,   -(t + b) / (t - b)  ,
+            0.0             ,   0.0                 ,   -2.0 / (f - n)      ,   -(f + n) / (f - n)  ,
+            0.0             ,   0.0                 ,   0.0                 ,    1.0                ,
+        ]);
+    }
+
+    /// For projection matrix. Defines an perspective projection matrix with the given [left-right] - [top-bottom] - [near-far] frustrum.
+    /// The default Frustrum is set to left-right: [-1.0, 1.0], top-bottom: [-1.0, 1.0], near-far: [-1.0, 1.0]
+    /// Replaces any earlier transformation to this Mat4.
+    pub fn project_perspective(&mut self, l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) {
+        *self = Mat4([
+            2.0 * n/(r - l) ,   0.0                 ,   (r + l)/(r - l)     ,   0.0                     ,
+            0.0             ,   2.0 * n / (t - b)   ,   (t + b) / (t - b)   ,   0.0                     ,
+            0.0             ,   0.0                 ,   -(f + n) / (f - n)  ,   -(2.0 * f * n)/(f - n)  ,
+            0.0             ,   0.0                 ,   -1.0                ,   0.0                     ,
+        ]);
     }
 }
 

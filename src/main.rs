@@ -31,15 +31,19 @@ fn main() {
     // let mut view_matrix = Mat3::new();
     let mut model_matrix: Mat4;
     let mut view_matrix: Mat4;
+    let mut projection_matrix: Mat4 = Mat4::new();
+    projection_matrix.project_perspective(-1.0, 1.0, -1.0, 1.0, -1.0, 0.0);
     
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
     let u_resolution = Uniform::new(program.id(), "u_resolution").expect("u_resolution Uniform");
     let u_model_matrix = Uniform::new(program.id(), "u_model_matrix").expect("u_model_matrix Uniform");
     let u_view_matrix = Uniform::new(program.id(), "u_view_matrix").expect("u_view_matrix Uniform");
+    let u_projection_matrix = Uniform::new(program.id(), "u_projection_matrix").expect("u_projection_matrix Uniform");
     unsafe {
         gl::Uniform1f(u_time.id, 0.0);
         gl::Uniform2f(u_resolution.id, 600 as f32, 600 as f32);
+        gl::UniformMatrix4fv(u_projection_matrix.id, 1, gl::TRUE, projection_matrix.into());
     }
 
     let start: Instant = Instant::now();
@@ -84,13 +88,11 @@ fn main() {
             model_matrix.rotate_z(time_mod.powi(3) / 2.);
 
             view_matrix = Mat4::new();
-            view_matrix.lookat((time_mod*time_mod).sin() * 0.1, 0.1, (time_mod*time_mod).cos() * 0.1, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+            view_matrix.lookat((time_mod).sin(), 0.0, (time_mod).cos(), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
             // view_matrix.translate(-0.25, -0.25, -0.25);
             // view_matrix.rotate_x(-PI/3.);
             // view_matrix.rotate_y(-PI/3.);
             // view_matrix.rotate_z(-PI/3.);
-            // view_matrix.rotate_y(-PI/2.);
-            // view_matrix.rotate_z(-PI/2.);
 
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
             // gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
