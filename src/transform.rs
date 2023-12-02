@@ -69,7 +69,8 @@ impl Into<*const f32> for Mat3 {
 
 /// A 4x4 matrix
 #[repr(C)]
-pub struct Mat4([f32; 16]);
+#[derive(Clone, Copy)]
+pub struct Mat4(pub [f32; 16]);
 
 impl std::fmt::Debug for Mat4 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

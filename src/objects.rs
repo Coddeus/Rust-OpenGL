@@ -289,14 +289,25 @@ impl Vao {
 
     fn setup(&self) {
         unsafe {
+            // Entity_id
             gl::EnableVertexAttribArray(0);
             gl::VertexAttribPointer(
                 0,
+                1,
+                gl::FLOAT,
+                gl::FALSE,
+                (3 * std::mem::size_of::<f32>()) as GLint,
+                null(),
+            );
+            // Vertex 2D position
+            gl::EnableVertexAttribArray(1);
+            gl::VertexAttribPointer(
+                1,
                 2,
                 gl::FLOAT,
                 gl::FALSE,
-                (2 * std::mem::size_of::<f32>()) as GLint,
-                null(),
+                (3 * std::mem::size_of::<f32>()) as GLint,
+                (1 * std::mem::size_of::<f32>())  as *const gl::types::GLvoid,
             );
         }
     }
