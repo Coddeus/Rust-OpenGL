@@ -102,7 +102,6 @@ fn main() {
                 // m.translate(time_mod/12.0, 0.0, 0.0); // for wheel visual effect
                 m.rotate_z(time_mod.powi(3) / 2.);
                 m.rotate_x(PI / 6. * i as f32);
-                println!("{:?}", m);
             }
 
             view_matrix = Mat4::new();
@@ -115,10 +114,6 @@ fn main() {
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
             // gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
             // gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
-            for c in vertices.chunks(3) {
-                println!("{:?}", c);
-            }
-            println!("{:?}", indices);
             // gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix[0].into());
             for (i, uniform) in u_model_matrix.iter().enumerate() {
                 gl::UniformMatrix4fv(uniform.id, 1, gl::TRUE, model_matrix[i].into());
