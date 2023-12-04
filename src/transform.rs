@@ -12,6 +12,11 @@ impl Mat3 {
         ])
     }
 
+    /// Returns a pointer to the matrix, readable by OpenGL.
+    pub fn ptr(&self) -> *const f32 {
+        self.0.as_ptr()
+    }
+
     /// Multiplies this Mat3 (`self`) with another one (`mat`), further from the initial vertex position vector, so the resulting transformation will be the chaining of both matrices' transformations: first `self`, then `mat`.
     pub fn mult(&mut self, mat: Mat3) {
         *self = Mat3([
@@ -61,12 +66,6 @@ impl Mat3 {
     }
 }
 
-impl Into<*const f32> for Mat3 {
-    fn into(self) -> *const f32 {
-        self.0.as_ptr()
-    }
-}
-
 /// A 4x4 matrix
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -87,6 +86,11 @@ impl Mat4 {
             0.0, 0.0, 1.0, 0.0,
             0.0, 0.0, 0.0, 1.0,
         ])
+    }
+
+    /// Returns a pointer to the matrix, readable by OpenGL.
+    pub fn ptr(&self) -> *const f32 {
+        self.0.as_ptr()
     }
 
     /// Multiplies this Mat4 (`self`) with another one (`mat`), further from the initial vertex position vector, so the resulting transformation will be the chaining of both matrices' transformations: first `self`, then `mat`.
@@ -206,11 +210,5 @@ impl Mat4 {
             0.0             ,   0.0                 ,   -(f + n) / (f - n)  ,   -(2.0 * f * n)/(f - n)  ,
             0.0             ,   0.0                 ,   -1.0                ,   0.0                     ,
         ]);
-    }
-}
-
-impl Into<*const f32> for Mat4 {
-    fn into(self) -> *const f32 {
-        self.0.as_ptr()
     }
 }

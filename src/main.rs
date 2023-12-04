@@ -53,7 +53,7 @@ fn main() {
     unsafe {
         gl::Uniform1f(u_time.id, 0.0);
         gl::Uniform2f(u_resolution.id, 600 as f32, 600 as f32);
-        gl::UniformMatrix4fv(u_projection_matrix.id, 1, gl::TRUE, projection_matrix.into());
+        gl::UniformMatrix4fv(u_projection_matrix.id, 1, gl::TRUE, projection_matrix.ptr());
 
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::BLEND);
@@ -116,9 +116,9 @@ fn main() {
             // gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
             // gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix[0].into());
             for (i, uniform) in u_model_matrix.iter().enumerate() {
-                gl::UniformMatrix4fv(uniform.id, 1, gl::TRUE, model_matrix[i].into());
+                gl::UniformMatrix4fv(uniform.id, 1, gl::TRUE, model_matrix[i].ptr());
             }
-            gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
+            gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.ptr());
             gl::DrawElements(
                 gl::TRIANGLES, 
                 indices.len() as i32, 
