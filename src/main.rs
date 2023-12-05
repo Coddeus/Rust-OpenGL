@@ -167,7 +167,6 @@ fn triangle_fan(n: u32) -> (Vec<Vertex>, Vec<u32>) {
 /// Creates `entities_number` triangle fans for regular polygons of `n` sides each.
 #[allow(non_snake_case)]
 fn triangle_fan_3D(n: u32, entities_number: u32) -> (Vec<Vertex>, Vec<u32>) {
-    let floats_per_vertex = 3;
     let (vertices, indices) = triangle_fan(n);
 
     if entities_number < 2 {
