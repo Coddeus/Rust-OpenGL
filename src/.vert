@@ -1,6 +1,6 @@
 #version 330 core
 
-layout (location = 0) in float EntityId;
+layout (location = 0) in uint EntityId;
 layout (location = 1) in vec2 Position;
 
 uniform float u_time;
@@ -31,7 +31,7 @@ void main()
 // 
     // gl_Position = vec4(uv, 1.0);
     
-    vec4 uv = u_model_matrix[int(EntityId)] * vec4(Position, 0.0, 1.0);
+    vec4 uv = u_model_matrix[EntityId] * vec4(Position, 0.0, 1.0);
     OUT.Color = vec3(uv.x / radius, uv.y / radius, uv.z / radius);
     uv = u_projection_matrix * u_view_matrix * uv;
 

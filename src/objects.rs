@@ -8,6 +8,8 @@ use gl::{
     UseProgram,
 };
 
+use super::Vertex;
+
 /// An OpenGL Shader (of the graphics pipeline)
 pub struct Shader {
     id: GLuint,
@@ -170,16 +172,16 @@ impl Vbo {
         Vbo { id }
     }
 
-    pub fn set(&self, data: &Vec<f32>) {
+    pub fn set(&self, data: &Vec<Vertex>) {
         self.bind();
         self.data(data);
     }
 
-    fn data(&self, vertices: &Vec<f32>) {
+    fn data(&self, vertices: &Vec<Vertex>) {
         unsafe {
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr,
+                (vertices.len() * std::mem::size_of::<Vertex>()) as gl::types::GLsizeiptr,
                 vertices.as_ptr() as *const gl::types::GLvoid,
                 gl::DYNAMIC_DRAW,
             );
@@ -287,16 +289,17 @@ impl Vao {
         self.setup();
     }
 
+    /// This function should be manually modified whenever the layout of the vertex buffer changes (so whenever `Vertex` layout is modified)
     fn setup(&self) {
+        let stride = (2 * std::mem::size_of::<f32>() + std::mem::size_of::<u32>()) as GLint;
         unsafe {
             // Entity_id
             gl::EnableVertexAttribArray(0);
-            gl::VertexAttribPointer(
+            gl::VertexAttribIPointer(
                 0,
                 1,
-                gl::FLOAT,
-                gl::FALSE,
-                (3 * std::mem::size_of::<f32>()) as GLint,
+                gl::UNSIGNED_INT,
+                stride,
                 null(),
             );
             // Vertex 2D position
@@ -306,8 +309,8 @@ impl Vao {
                 2,
                 gl::FLOAT,
                 gl::FALSE,
-                (3 * std::mem::size_of::<f32>()) as GLint,
-                (1 * std::mem::size_of::<f32>())  as *const gl::types::GLvoid,
+                stride,
+                std::mem::size_of::<u32>() as *const gl::types::GLvoid,
             );
         }
     }
