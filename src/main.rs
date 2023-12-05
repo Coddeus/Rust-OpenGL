@@ -45,13 +45,7 @@ fn main() {
 
     let u_time = Uniform::new(program.id(), "u_time").expect("u_time Uniform");
     let u_resolution = Uniform::new(program.id(), "u_resolution").expect("u_resolution Uniform");
-    let u_model_matrix = (0..6)
-        .into_iter()
-        .map(|n| {
-            let name = format!("u_model_matrix[{}]", n.to_string());
-            Uniform::new(program.id(), &name).expect("u_model_matrix Uniform")
-        })
-        .collect::<Vec<Uniform>>();
+    let u_model_matrix = Uniform::new(program.id(), "u_model_matrix").expect("u_model_matrix Uniform");
     let u_view_matrix = Uniform::new(program.id(), "u_view_matrix").expect("u_view_matrix Uniform");
     let u_projection_matrix = Uniform::new(program.id(), "u_projection_matrix").expect("u_projection_matrix Uniform");
     unsafe {
@@ -118,11 +112,9 @@ fn main() {
             gl::Uniform1f(u_time.id, start.elapsed().as_secs_f32());
             // gl::UniformMatrix3fv(u_model_matrix.id, 1, gl::TRUE, model_matrix.into());
             // gl::UniformMatrix3fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.into());
-            // gl::UniformMatrix4fv(u_model_matrix.id, 1, gl::TRUE, model_matrix[0].into());
-            for (i, uniform) in u_model_matrix.iter().enumerate() {
-                gl::UniformMatrix4fv(uniform.id, 1, gl::TRUE, model_matrix[i].ptr());
-            }
+            gl::UniformMatrix4fv(u_model_matrix.id, 6, gl::TRUE, model_matrix[0].ptr());
             gl::UniformMatrix4fv(u_view_matrix.id, 1, gl::TRUE, view_matrix.ptr());
+
             gl::DrawElements(
                 gl::TRIANGLES,
                 indices.len() as i32,
