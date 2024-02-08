@@ -157,7 +157,7 @@ impl Mat4 {
         ]));
     }
 
-    /// For view matrix. Moves the "camera" to (eye_x, eye_y, eye_z), looking at (target_x, target_y, target_z), with a "roll" roll angle, in radians.
+    /// For view matrix. Moves the "camera" to (eye_x, eye_y, eye_z), looking at (target_x, target_y, target_z), with the up direction pointing to (up_x, up_y, up_z).
     /// Replaces any earlier transformation to this Mat4.
     pub fn lookat(&mut self, eye_x: f32, eye_y: f32, eye_z: f32, target_x: f32, target_y: f32, target_z: f32, mut up_x: f32, mut up_y: f32, mut up_z: f32,) {
         // Forward vector
